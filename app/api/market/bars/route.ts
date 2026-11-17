@@ -19,7 +19,10 @@ export async function POST(request: Request) {
       return bars.flatMap((bar: any) => {
         const timestamp = Number(bar.ts_ms);
         if (!Number.isFinite(timestamp)) return [];
-        const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(timestamp));
+        const exchangeDate = typeof bar.exchange_date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(bar.exchange_date)
+          ? bar.exchange_date
+          : null;
+        const date = exchangeDate || new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(timestamp));
         const values = [bar.open, bar.high, bar.low, bar.close, bar.volume].map(Number);
         if (!values.every(Number.isFinite)) return [];
         return [{ symbol: String(bar.symbol || sid.split(':').pop() || '').toUpperCase(), date, open: values[0], high: values[1], low: values[2], close: values[3], volume: values[4] }];
