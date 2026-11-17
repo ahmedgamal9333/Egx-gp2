@@ -10,7 +10,7 @@ export async function GET() {
       code: 'DATA_PROVIDER_NOT_CONFIGURED',
       message: 'لم يتم إعداد مفتاح مزود بيانات السوق بعد.',
       provider: 'DataCedar',
-      setup: 'أضف DATACEDAR_KEY في متغيرات بيئة Vercel.',
+      setup: 'أضف DATACEDAR_KEY2 في متغيرات بيئة Vercel.',
     }, { status: 503 });
   }
   try {
