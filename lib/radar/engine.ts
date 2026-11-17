@@ -11,7 +11,7 @@ function evaluate(bars:RadarBar[]):Signal[]{
  const out:Signal[]=[];
  // Signal features use only bars up to i. Future bars are read only for outcome evaluation.
  for(let i=26;i<rows.length-2;i++){
-  const b=rows[i],avg=mean(v.slice(Math.max(0,i-19),i+1)),rvol=avg?v[i]/avg:0,sma=mean(c.slice(i-19,i+1)),priorHigh=Math.max(...rows.slice(i-20,i).map(x=>x.high)),r=rsi(c,i),hist=m[i]-ms[i],prevHist=m[i-1]-ms[i-1];
+  const b=rows[i],avg=mean(v.slice(i-20,i)),rvol=avg?v[i]/avg:0,sma=mean(c.slice(i-19,i+1)),priorHigh=Math.max(...rows.slice(i-20,i).map(x=>x.high)),r=rsi(c,i),hist=m[i]-ms[i],prevHist=m[i-1]-ms[i-1];
   const flow=(obv[i]>obv[i-5]&&c[i]>c[i-5]?15:0)+(c[i]>c[i-1]&&v[i]>=mean(v.slice(i-4,i+1))?10:0);
   const vol=rvol>=2?20:rvol>=1.5?15:rvol>=1.2?10:rvol>=.8?5:0;
   const mom=(r>=52&&r<=68?12:r>50&&r<75?8:0)+(hist>prevHist&&hist>0?8:hist>prevHist?4:0);
