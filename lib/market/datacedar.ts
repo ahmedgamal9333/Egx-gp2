@@ -46,3 +46,9 @@ export async function getEgxBarsBatch(sids: string[], from?: string) {
   if (from) params.set('from', from);
   return request(`/stocks/bars?${params.toString()}`);
 }
+
+export async function getEgxBars(sid: string, from?: string) {
+  const params = new URLSearchParams({ timeframe: '1d', order: 'asc', limit: '50000', adjustment: 'raw' });
+  if (from) params.set('from', from);
+  return request(`/stocks/${encodeURIComponent(sid)}/bars?${params.toString()}`);
+}
