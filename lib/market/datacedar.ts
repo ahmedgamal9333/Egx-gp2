@@ -9,19 +9,29 @@ export type ProviderAsset = {
   [key: string]: unknown;
 };
 
-export function dataCedarConfigured() { return Boolean(process.env[KEY_NAME]); }
+export function dataCedarConfigured() { return Boolean(process.env[KEY_NAME]?.trim()); }
 
 async function request(path: string) {
-  const key = process.env[KEY_NAME];
+  const key = process.env[KEY_NAME]?.trim();
   if (!key) throw new Error('DATACEDAR_KEY2_MISSING');
   const response = await fetch(`${BASE}${path}`, {
     headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' },
     next: { revalidate: 3600 }, signal: AbortSignal.timeout(20000),
   });
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403) throw new Error('DATACEDAR_AUTH_OR_PLAN');
+    let providerCode = '';
+    let providerMessage = '';
+    try {
+      const body = await response.json();
+      providerCode = String(body?.error?.code || body?.code || '');
+      providerMessage = String(body?.error?.message || body?.message || '');
+    } catch {}
+    if (response.status === 401) throw new Error('DATACEDAR_AUTH_INVALID');
+    if (response.status === 402) throw new Error(providerCode === 'BATCH_TOO_LARGE' ? 'DATACEDAR_BATCH_TOO_LARGE' : 'DATACEDAR_PLAN_PAYMENT_REQUIRED');
+    if (response.status === 403) throw new Error(providerCode === 'HISTORY_LIMIT_EXCEEDED' ? 'DATACEDAR_HISTORY_LIMIT' : 'DATACEDAR_FORBIDDEN');
+    if (response.status === 404) throw new Error(providerCode ? `DATACEDAR_NOT_FOUND:${providerCode}` : 'DATACEDAR_NOT_FOUND');
     if (response.status === 429) throw new Error('DATACEDAR_RATE_LIMIT');
-    throw new Error(`DATACEDAR_HTTP_${response.status}`);
+    throw new Error(`DATACEDAR_HTTP_${response.status}${providerCode ? `:${providerCode}` : ''}${providerMessage ? `:${providerMessage.slice(0,160)}` : ''}`);
   }
   return response.json();
 }
